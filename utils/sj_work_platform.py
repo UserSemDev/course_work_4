@@ -4,10 +4,12 @@ import time
 import requests
 from utils.abc_project import JobVacancyAPI
 from utils.exceptions import ResponseError
+from utils.json_saver import JSONSaver
 from utils.vacancy import Vacancy
 
 
 class SuperJobAPI(JobVacancyAPI):
+    """Класс для рабы с API SuperJob"""
 
     url = 'https://api.superjob.ru/2.0/vacancies/'
     SJ_API_KEY = os.getenv('SUPER_JOB_API_KEY')
@@ -17,7 +19,7 @@ class SuperJobAPI(JobVacancyAPI):
         self.vacancies = []
         self.params = {
             'keyword': None,
-            'count': 100,
+            'count': 40,
             'page': 0,
         }
 
@@ -34,7 +36,7 @@ class SuperJobAPI(JobVacancyAPI):
         data = self.correct_query(kwargs)
         self.params['keyword'] = data['search_query']
         if data.get('salary'):
-            self.params['payment_defined'] = data['salary']
+            self.params['no_agreement'] = data['salary']
         if data.get('experience'):
             self.params['experience'] = data['experience']
         index = 0
@@ -47,8 +49,12 @@ class SuperJobAPI(JobVacancyAPI):
                     page = resp['more']
                     for item in items:
                         job_vacancy = self.get_params_vacancy(item)
-                        self.vacancies.append(Vacancy(**job_vacancy))
-                    print(f'Загружены вакансии. Страница {index + 1}')
+                        vacancy = Vacancy(**job_vacancy)
+                        self.vacancies.append(vacancy)
+                        json_saver = JSONSaver()
+                        json_saver.add_vacancy(vacancy)
+                    index += 1
+                    print(f'Загружены вакансии. Страница {index}')
                     if page is False:
                         break
                     self.params['page'] = self.params.get('page') + 1
@@ -69,17 +75,17 @@ class SuperJobAPI(JobVacancyAPI):
         :return: откорректированный словарь параметров для запроса к API
         """
         dict_experience = {
-                range(0, 1): "1",  # "без опыта"
-                range(1, 3): "2",  # "от 1 года"
-                range(3, 6): "3",  # "от 3 лет"
-                range(6, 100): "4"  # "от 6 лет"
+                range(0, 1): {"id": "1", "name": "без опыта"},
+                range(1, 3): {"id": "2", "name": "от 1 года"},
+                range(3, 6): {"id": "3", "name": "от 3 лет"},
+                range(6, 100): {"id": "4", "name": "от 6 лет"}
         }
 
         experience = user_params['experience']
         if experience.strip().isdigit():
             for key in dict_experience.keys():
                 if int(experience) in key:
-                    user_params['experience'] = dict_experience[key]
+                    user_params['experience'] = dict_experience[key]['id']
         else:
             del user_params['experience']
 
@@ -87,7 +93,7 @@ class SuperJobAPI(JobVacancyAPI):
         if salary.isdigit():
             salary = int(salary)
             if salary == 1:
-                user_params['salary'] = 1
+                user_params['salary'] = True
             else:
                 del user_params['salary']
         else:
@@ -102,7 +108,7 @@ class SuperJobAPI(JobVacancyAPI):
         :param job_item: json словарь полученный от API с вакансией
         :return: возвращает словарь с вакансией
         """
-        id_vacancy = job_item['id']
+        id_vacancy = int(job_item['id'])
         name = job_item['profession']
         if job_item['payment_from'] != 0 or job_item['payment_to'] != 0:
             currency = 'RUR' if job_item['currency'].upper() == 'RUB' else job_item['currency'].upper()
@@ -112,6 +118,7 @@ class SuperJobAPI(JobVacancyAPI):
         else:
             salary = None
         experience = job_item.get('experience').get('title')
+        description = job_item.get('client').get('description')
         employer = {
             'name': job_item.get('client').get('title'),
             'alternate_url': job_item.get('client').get('url')
@@ -121,6 +128,7 @@ class SuperJobAPI(JobVacancyAPI):
                 'name': name,
                 'salary': salary,
                 'experience': experience,
+                'description': description,
                 'employer': employer,
                 'url_vacancy': alternate_url,
                 'platform': 'SuperJob'}
