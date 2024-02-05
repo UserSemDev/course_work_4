@@ -3,6 +3,7 @@ import time
 import requests
 from utils.abc_project import JobVacancyAPI
 from utils.exceptions import ResponseError
+from utils.json_saver import JSONSaver
 from utils.vacancy import Vacancy
 
 
@@ -48,7 +49,10 @@ class HeadHunterAPI(JobVacancyAPI):
                     pages = resp['pages']
                     for item in items:
                         job_vacancy = self.get_params_vacancy(item)
-                        self.vacancies.append(Vacancy(**job_vacancy))
+                        vacancy = Vacancy(**job_vacancy)
+                        self.vacancies.append(vacancy)
+                        json_saver = JSONSaver()
+                        json_saver.add_vacancy(vacancy)
                     print(f'Загружены вакансии. Страница {page + 1} из {pages}')
                     if page == pages - 1:
                         break
@@ -70,17 +74,17 @@ class HeadHunterAPI(JobVacancyAPI):
         :return: откорректированный словарь параметров для запроса к API
         """
         dict_experience = {
-            range(0, 1): 'noExperience',
-            range(1, 3): 'between1And3',
-            range(3, 6): 'between3And6',
-            range(6, 100): 'moreThan6'
+            range(0, 1): {'id': 'noExperience', 'name': "без опыта"},
+            range(1, 3): {'id': 'between1And3', 'name': "от 1 до 3 лет"},
+            range(3, 6): {'id': 'between3And6', 'name': "от 3 до 6 лет"},
+            range(6, 100): {'id': 'moreThan6', 'name': "более 6 лет"}
         }
 
         experience = user_params['experience']
-        if experience.strip().isdigit():
+        if experience.isdigit():
             for key in dict_experience.keys():
                 if int(experience) in key:
-                    user_params['experience'] = dict_experience[key]
+                    user_params['experience'] = dict_experience[key]['id']
         else:
             del user_params['experience']
 
@@ -101,15 +105,17 @@ class HeadHunterAPI(JobVacancyAPI):
         :param job_item: json словарь полученный от API с вакансией
         :return: возвращает словарь с вакансией
         """
-        id_vacancy = job_item['id']
+        id_vacancy = int(job_item['id'])
         name = job_item['name']
         if job_item['salary']:
+            currency = 'BYN' if job_item['salary']['currency'].upper() == 'BYR' else job_item['salary']['currency'].upper()
             salary = {'from': job_item['salary']['from'],
                       'to': job_item['salary']['to'],
-                      'currency': job_item['salary']['currency']}
+                      'currency': currency}
         else:
             salary = None
         experience = job_item.get('experience').get('name')
+        description = f"{job_item.get('snippet').get('requirement')} {job_item.get('snippet').get('responsibility')}"
         employer = {
             'name': job_item.get('employer').get('name'),
             'alternate_url': job_item.get('employer').get('alternate_url')
@@ -119,6 +125,7 @@ class HeadHunterAPI(JobVacancyAPI):
                 'name': name,
                 'salary': salary,
                 'experience': experience,
+                'description': description,
                 'employer': employer,
                 'url_vacancy': alternate_url,
                 'platform': 'HeadHunter'}
