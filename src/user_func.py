@@ -1,8 +1,8 @@
 from config import VACANCY_FILTER_JSON_PATH
-from utils.hh_work_platforms import HeadHunterAPI
-from utils.json_saver import JSONSaver
-from utils.sj_work_platform import SuperJobAPI
-from utils.operations_for_vacancies import OperationsVacancies
+from src.hh_work_platforms import HeadHunterAPI
+from src.json_saver import JSONSaver
+from src.sj_work_platform import SuperJobAPI
+from src.operations_for_vacancies import OperationsVacancies
 
 
 def user_interaction():

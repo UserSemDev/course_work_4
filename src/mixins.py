@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from utils.exceptions import ResponseError
+from src.exceptions import ResponseError
 
 
 class MixinExchanges:

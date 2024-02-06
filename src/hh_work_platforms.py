@@ -1,10 +1,10 @@
 import random
 import time
 import requests
-from utils.abc_project import JobVacancyAPI
-from utils.exceptions import ResponseError
-from utils.json_saver import JSONSaver
-from utils.vacancy import Vacancy
+from src.abc_project import JobVacancyAPI
+from src.exceptions import ResponseError
+from src.json_saver import JSONSaver
+from src.vacancy import Vacancy
 
 
 class HeadHunterAPI(JobVacancyAPI):

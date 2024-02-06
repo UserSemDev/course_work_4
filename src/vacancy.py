@@ -1,4 +1,4 @@
-from utils.mixins import MixinExchanges
+from src.mixins import MixinExchanges
 
 
 class Vacancy(MixinExchanges):
