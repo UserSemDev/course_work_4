@@ -115,7 +115,10 @@ class HeadHunterAPI(JobVacancyAPI):
         else:
             salary = None
         experience = job_item.get('experience').get('name')
-        description = f"{job_item.get('snippet').get('requirement')} {job_item.get('snippet').get('responsibility')}"
+        requirement = job_item.get('snippet').get('requirement')
+        responsibility = job_item.get('snippet').get('responsibility')
+        description = f"{requirement if requirement else ''} {responsibility if responsibility else ''}"
+        area = job_item.get('area').get('name')
         employer = {
             'name': job_item.get('employer').get('name'),
             'alternate_url': job_item.get('employer').get('alternate_url')
@@ -126,6 +129,7 @@ class HeadHunterAPI(JobVacancyAPI):
                 'salary': salary,
                 'experience': experience,
                 'description': description,
+                'area': area,
                 'employer': employer,
                 'url_vacancy': alternate_url,
                 'platform': 'HeadHunter'}
