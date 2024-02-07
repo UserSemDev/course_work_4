@@ -119,6 +119,7 @@ class SuperJobAPI(JobVacancyAPI):
             salary = None
         experience = job_item.get('experience').get('title')
         description = job_item.get('client').get('description')
+        area = job_item.get('town').get('title')
         employer = {
             'name': job_item.get('client').get('title'),
             'alternate_url': job_item.get('client').get('url')
@@ -129,6 +130,7 @@ class SuperJobAPI(JobVacancyAPI):
                 'salary': salary,
                 'experience': experience,
                 'description': description,
+                'area': area,
                 'employer': employer,
                 'url_vacancy': alternate_url,
                 'platform': 'SuperJob'}
