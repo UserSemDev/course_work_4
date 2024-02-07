@@ -20,7 +20,9 @@ class MixinExchanges:
 
             response = requests.get('https://www.cbr.ru/currency_base/daily/', headers=headers)
             if response.status_code != 200:
-                raise ResponseError(f'Ошибка запроса, статус код {response.status_code}')
+                print(f'Ошибка запроса, статус код {response.status_code}\n'
+                      f'Зарплаты не будут конвертированы в рубли.')
+                MixinExchanges._exchanges_rates = -1
             else:
                 soup = BeautifulSoup(response.text, 'html.parser')
                 all_currency = soup.find('div', class_='table-wrapper').find_all('tr')
