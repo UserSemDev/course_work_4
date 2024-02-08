@@ -73,15 +73,17 @@ def search_vacancies_in_json():
             user_from, user_to = list(map(int, input("Введите диапазон зарплаты(пример 100000-150000): ").strip().split('-')))
             for item in sorted_vacancies:
                 if item.salary:
-                    index += 1
                     if item.from_salary and item.to_salary:
                         if item.from_salary == user_from and item.to_salary == user_to:
+                            index += 1
                             print(f"{index}: {item}")
                     elif item.from_salary and not item.to_salary:
                         if item.from_salary in range(user_from, user_to+1):
+                            index += 1
                             print(f"{index}: {item}")
                     elif not item.from_salary and item.to_salary:
                         if item.to_salary in range(user_from, user_to+1):
+                            index += 1
                             print(f"{index}: {item}")
             if index == 0:
                 print("\nПодходящих вакансий не найдено. Попробуйте изменить запрос\n")
