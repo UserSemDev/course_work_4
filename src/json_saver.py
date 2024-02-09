@@ -2,7 +2,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 
-from config import VACANCY_ALL_JSON_PATH
+from config import VACANCY_ALL_JSON_PATH, PATH_FOLDER
 
 
 class BaseSaver(ABC):
@@ -40,6 +40,8 @@ class JSONSaver(BaseSaver):
         :return: None
         """
         data_json = vacancy_obj.correct_info_vacancy()
+        if not os.path.exists(PATH_FOLDER):
+            os.mkdir(PATH_FOLDER)
         with open(self.file_path, "a", encoding='UTF-8') as f:
             if os.stat(self.file_path).st_size == 0:
                 json.dump([data_json], f, indent=2, ensure_ascii=False)
@@ -57,17 +59,20 @@ class JSONSaver(BaseSaver):
         :return: None
         """
         data_json = vacancy_obj.correct_info_vacancy()
-        with open(self.file_path, encoding='UTF-8') as file:
-            data_vacancy = json.load(file)
-        if data_json in data_vacancy:
-            for item in data_vacancy:
-                if item == data_json:
-                    index = data_vacancy.index(item)
-                    del data_vacancy[index]
-                    print("Вакансия найдена. Удаляем...")
-                    break
-            with open(self.file_path, "w", encoding='UTF-8') as outfile:
-                json.dump(data_vacancy, outfile, indent=2, ensure_ascii=False)
+        if os.path.exists(self.file_path):
+            with open(self.file_path, encoding='UTF-8') as file:
+                data_vacancy = json.load(file)
+            if data_json in data_vacancy:
+                for item in data_vacancy:
+                    if item == data_json:
+                        index = data_vacancy.index(item)
+                        del data_vacancy[index]
+                        print("Вакансия найдена. Удаляем...")
+                        break
+                with open(self.file_path, "w", encoding='UTF-8') as outfile:
+                    json.dump(data_vacancy, outfile, indent=2, ensure_ascii=False)
 
+            else:
+                print("Такой вакансии нет")
         else:
-            print("Такой вакансии нет")
+            print("Несуществующий путь.")
