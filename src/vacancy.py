@@ -14,8 +14,8 @@ class Vacancy(MixinExchanges):
         else:
             self.from_salary = self.salary.get('from')
             self.to_salary = self.salary.get('to')
-        if self.salary['currency'] != 'руб.':
-            self.convert_salary()
+            if self.salary.get('currency') != 'руб.':
+                self.convert_salary()
         self.experience = kwargs['experience']
         self.description = kwargs['description']
         self.area = kwargs['area']
